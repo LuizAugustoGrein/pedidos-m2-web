@@ -54,7 +54,7 @@ export function StyledDrawer({ loggout, handleDrawerClose, open, drawerWidth }: 
                         <ListItemText primary={'Produtos'} />
                     </ListItemButton>
                 </ListItem>
-                <ListItem key={'carts'} disablePadding component="a" href="/carts">
+                <ListItem key={'orders'} disablePadding component="a" href="/orders">
                     <ListItemButton>
                         <ListItemIcon>
                             <ShoppingCartIcon />

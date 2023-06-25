@@ -39,17 +39,13 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 export default function ProductsEdit() {
     const [isAuthenticated, setIsAuthenticated] = React.useState<boolean>(false);
-    const [validity, setValidity] = React.useState("");
     const [name, setName] = React.useState("");
-    const [brand, setBrand] = React.useState("");
-    const [price, setPrice] = React.useState("");
     const [description, setDescription] = React.useState("");
+    const [price, setPrice] = React.useState("");
 
-    const [validityCorrect, setValidityCorrect] = React.useState(false);
     const [nameCorrect, setNameCorrect] = React.useState(false);
-    const [brandCorrect, setBrandCorrect] = React.useState(false);
-    const [priceCorrect, setPriceCorrect] = React.useState(false);
     const [descriptionCorrect, setDescriptionCorrect] = React.useState(false);
+    const [priceCorrect, setPriceCorrect] = React.useState(false);
 
     const [canBeSubmitted, setCanBeSubmitted] = React.useState(true);
 
@@ -70,16 +66,14 @@ export default function ProductsEdit() {
         })
 
         function setDetails() {
-            console.log(router.query.id)
+            var productID = localStorage.getItem('current_product');
             axios.get(
-                'http://localhost:3333/products/' + router.query.id
+                'http://localhost:3333/products/' + productID
             ).then((resp) => {
                 if (resp?.status == 200) {
-                    setValidity(resp.data.validity?.slice(0, 10));
                     setName(resp.data.name);
-                    setBrand(resp.data.brand)
-                    setPrice(resp.data.price)
-                    setDescription(resp.data.description)
+                    setDescription(resp.data.description);
+                    setPrice(resp.data.price);
                 } else {
                     console.log(resp);
                 }
@@ -90,7 +84,7 @@ export default function ProductsEdit() {
     }, [])    
 
     function verifyFields () {
-        if (validityCorrect && nameCorrect && brandCorrect && priceCorrect && descriptionCorrect) {
+        if (nameCorrect && priceCorrect && descriptionCorrect) {
             return true;
         } else {
             return false;
@@ -99,31 +93,37 @@ export default function ProductsEdit() {
 
     React.useEffect(() => {
         setCanBeSubmitted(verifyFields());
-    }, [validityCorrect, nameCorrect, brandCorrect, priceCorrect, descriptionCorrect])
+    }, [nameCorrect, priceCorrect, descriptionCorrect])
 
     const router = useRouter()
 
-    const submitForm = () => {
+    const submitForm = async () => {
+        var token = localStorage.getItem('token');
+
         var body = {
-            validity: validity.slice(0, 10),
             name: name,
-            brand: brand,
             price: Number(price),
             description: description
         }
-        
-        axios.put(
-            'http://localhost:3333/products/' + router.query.id,
-            body
-        ).then(() => {
-        })
 
-        router.replace('/products')
+
+        var productID = localStorage.getItem('current_product');
+        
+        await axios.put(
+            'http://localhost:3333/products/' + productID,
+            body,
+            {
+                headers: {
+                    token: token
+                }
+            }
+        )
              
     };
 
     const loggout = () => {
         localStorage.setItem('token', '');
+        localStorage.setItem('admin', 'false');
         router.reload()
     };
 
@@ -149,9 +149,7 @@ export default function ProductsEdit() {
                     </Typography>
                     <form className="" noValidate>
                         <StyledTextField type="text" label={'Nome'} state={name} setState={setName} correct={nameCorrect} setCorrect={setNameCorrect} />
-                        <StyledTextField type="text" label={'Marca'} state={brand} setState={setBrand} correct={brandCorrect} setCorrect={setBrandCorrect} />
                         <StyledTextField type="number" label={'Preco'} state={price} setState={setPrice} correct={priceCorrect} setCorrect={setPriceCorrect} />
-                        <StyledTextField type="date" label={'Validade'} state={validity} setState={setValidity} correct={validityCorrect} setCorrect={setValidityCorrect} />
                         <StyledTextField type="text" label={'Descricao'} state={description} setState={setDescription} correct={descriptionCorrect} setCorrect={setDescriptionCorrect} />
                         <Button
                             type="submit"

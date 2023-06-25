@@ -11,38 +11,16 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/router';
 
-export default function CartProductsTable() {
+interface Products {
+    id: Number;
+    total_price: Number;
+    status: string;
+    customer_id: Number;
+    creation_time: Date;
+    update_time: Date;
+}
 
-    const [products, setProducts] = useState<Array<any>>([])
-
-    useEffect(() => {
-        var token = localStorage.getItem('token');
-
-        const fetchProducts = async () => {
-            await axios.get(
-                'http://localhost:3333/cart-products/' + router.query.id,
-                {
-                    headers: {
-                        token: token
-                    }
-                }
-            ).then((resp) => {
-                if (resp?.status === 200) {
-                    if (resp.data.products) {
-                        const data: any = [];
-                        resp.data.products.forEach((product: any) => {
-                            data.push(product);
-                        });
-                        setProducts(data);
-                    }
-                }
-            })
-        }
-
-        fetchProducts();
-
-    }, [])
-
+export default function OrderProductsTable(products: Array<Products>) {
 
     const router = useRouter()
 
@@ -66,7 +44,7 @@ export default function CartProductsTable() {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {products?.map((row) => (
+                    {products?.map((row: any) => (
                         <TableRow
                             key={row.details.name}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

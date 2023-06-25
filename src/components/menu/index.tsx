@@ -33,6 +33,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
         duration: theme.transitions.duration.leavingScreen,
     }),
     marginLeft: `-${drawerWidth}px`,
+    marginRight: `-300px`,
     ...(open && {
         transition: theme.transitions.create('margin', {
             easing: theme.transitions.easing.easeOut,
@@ -96,6 +97,7 @@ export default function Menu() {
 
     const loggout = () => {
         localStorage.setItem('token', '');
+        localStorage.setItem('admin', 'false');
         router.reload()
     };
 
@@ -166,7 +168,7 @@ export default function Menu() {
                             <ListItemText primary={'Produtos'} />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem key={'carts'} disablePadding component="a" href="/carts">
+                    <ListItem key={'orders'} disablePadding component="a" href="/orders">
                         <ListItemButton>
                             <ListItemIcon>
                                 <ShoppingCartIcon />

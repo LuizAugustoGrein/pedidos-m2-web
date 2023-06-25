@@ -58,7 +58,8 @@ function Register() {
     )
     if (resp?.status === 200) {
       localStorage.setItem('token', resp.data.token);
-      router.push('/home')
+      localStorage.setItem('admin', 'false');
+      router.push('/products')
     }
   };
 

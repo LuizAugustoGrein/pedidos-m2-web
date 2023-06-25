@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { styled } from '@mui/material/styles';
-import { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import { useRouter } from 'next/router';
@@ -32,10 +31,6 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
     }),
 }));
 
-interface AppBarProps extends MuiAppBarProps {
-    open?: boolean;
-}
-
 const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
@@ -54,9 +49,7 @@ interface IFormInput {
 
 const schema = yup.object().shape({
     name: yup.string().required().min(2).max(100),
-    brand: yup.string().required().min(2).max(100),
     price: yup.number().required(),
-    validity: yup.date().required(),
     description: yup.string().required().min(2)
 });
 
@@ -91,16 +84,21 @@ export default function Menu() {
     });
 
     const onSubmit = async (data: IFormInput) => {
+        var token = localStorage.getItem('token');
+
         var body = {
-            validity: data.validity.toISOString().slice(0, 10),
             name: data.name,
-            brand: data.brand,
             price: data.price,
             description: data.description
         }
         const resp = await axios.post(
             'http://localhost:3333/products',
-            body
+            body,
+            {
+                headers: {
+                    token: token
+                }
+            }
         )
         if (resp?.status === 200) {
             router.push('/products')
@@ -111,6 +109,7 @@ export default function Menu() {
 
     const loggout = () => {
         localStorage.setItem('token', '');
+        localStorage.setItem('admin', 'false');
         router.reload()
     };
 
@@ -146,16 +145,6 @@ export default function Menu() {
                             required
                         />
                         <TextField
-                            {...register("brand")}
-                            variant="outlined"
-                            margin="normal"
-                            label="Marca"
-                            helperText={errors.brand?.message}
-                            error={!!errors.brand?.message}
-                            fullWidth
-                            required
-                        />
-                        <TextField
                             {...register("price")}
                             variant="outlined"
                             margin="normal"
@@ -163,17 +152,6 @@ export default function Menu() {
                             helperText={errors.price?.message}
                             error={!!errors.price?.message}
                             type="number"
-                            fullWidth
-                            required
-                        />
-                        <TextField
-                            {...register("validity")}
-                            variant="outlined"
-                            margin="normal"
-                            label="Validade"
-                            helperText={errors.validity?.message}
-                            error={!!errors.validity?.message}
-                            type="date"
                             fullWidth
                             required
                         />

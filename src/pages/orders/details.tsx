@@ -1,30 +1,33 @@
-import * as React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
-import Drawer from '@mui/material/Drawer';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import FastfoodIcon from '@mui/icons-material/Fastfood';
+import MenuIcon from '@mui/icons-material/Menu';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { Box } from '@mui/material';
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import CssBaseline from '@mui/material/CssBaseline';
+import Divider from '@mui/material/Divider';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import FastfoodIcon from '@mui/icons-material/Fastfood';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import { styled, useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { Box, Button, Container, MenuItem, Select, TextField } from '@mui/material';
-import { useForm } from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useState } from 'react';
+import * as React from 'react';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 const drawerWidth = 240;
 
@@ -77,21 +80,13 @@ const DrawerHeader = styled('div')(({ theme }) => ({
     justifyContent: 'flex-end',
 }));
 
-interface IFormInput {
-    product_id: number;
-    quantity: number;
-}
-
-const schema = yup.object().shape({
-    product_id: yup.number().required(),
-    quantity: yup.number().required()
-});
-
-export default function Menu() {
+export default function OrderDetails() {
     const [isAuthenticated, setIsAuthenticated] = React.useState<boolean>(false);
-    const [products, setProducts] = useState<Array<any>>([]);
+    const [order, setOrder] = React.useState<any>({});
+    const router = useRouter();
 
     React.useEffect(() => {
+
         var token = localStorage.getItem('token');
 
         axios.post(
@@ -107,62 +102,26 @@ export default function Menu() {
             }
         })
 
-        const fetchProducts = async () => {
+        const fetchOrder = async () => {
+            var orderID = localStorage.getItem('current_order');
             await axios.get(
-                'http://localhost:3333/products'
+                'http://localhost:3333/order/' + orderID,
+                { headers: { token: token } }
             ).then((resp) => {
+                console.log(resp.data);
                 if (resp?.status === 200) {
-                    if (resp.data.products) {
-                        const data: any = [];
-                        resp.data.products.forEach((product: any) => {
-                            data.push(product);
-                        });
-                        setProducts(data);
-                    }
+                    setOrder(resp.data);
                 }
             })
         }
 
-        fetchProducts();
-    }, [])
-
-    const router = useRouter()
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<IFormInput>({
-        resolver: yupResolver(schema),
-    });
-
-    const onSubmit = async (data: IFormInput) => {
-        var token = localStorage.getItem('token');
+        fetchOrder();
         
-        var body = {
-            quantity: data.quantity,
-            product_id: data.product_id,
-            cart_id: router.query.id
-        }
-        console.log(body);
-        const resp = await axios.post(
-            'http://localhost:3333/cart-products/' + router.query.id,
-            body,
-            {
-                headers: {
-                    token: token
-                }
-            }
-        )
-        if (resp?.status === 200) {
-            router.push('/carts/edit?id=' + router.query.id)
-        } else {
-            console.log(resp);
-        }
-    };
+    }, [])
 
     const loggout = () => {
         localStorage.setItem('token', '');
+        localStorage.setItem('admin', 'false');
         router.reload()
     };
 
@@ -233,7 +192,7 @@ export default function Menu() {
                             <ListItemText primary={'Produtos'} />
                         </ListItemButton>
                     </ListItem>
-                    <ListItem key={'carts'} disablePadding component="a" href="/carts">
+                    <ListItem key={'orders'} disablePadding component="a" href="/orders">
                         <ListItemButton>
                             <ListItemIcon>
                                 <ShoppingCartIcon />
@@ -254,45 +213,51 @@ export default function Menu() {
             </Drawer>
             <Main open={open}>
                 <DrawerHeader />
-                <Container maxWidth="md" className="register-form">
-                    <Typography className="" variant="h3">
-                        Adicionar Produto ao Carrinho
-                    </Typography>
-                    <form onSubmit={handleSubmit(onSubmit)} className="" noValidate>
-                        <Select
-                            {...register("product_id")}
-                            variant="outlined"
-                            label="Produto"
-                            error={!!errors.product_id?.message}
-                            fullWidth
-                            required
-                        >
-                            {products.map((item, index) => {
-                                return <MenuItem value={item.id}>{item.name}</MenuItem>
-                            })}
-                        </Select>
-                        <TextField
-                            {...register("quantity")}
-                            variant="outlined"
-                            margin="normal"
-                            label="Quantidade"
-                            helperText={errors.quantity?.message}
-                            error={!!errors.quantity?.message}
-                            type="number"
-                            fullWidth
-                            required
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className=""
-                        >
-                            Adicionar
-                        </Button>
-                    </form>
-                </Container>
+                <Typography className="" variant="h4">
+                    Detalhes do pedido nº{order.id}
+                </Typography>
+                <Toolbar sx={{ justifyContent: "space-between" }}>
+
+                </Toolbar>
+
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="right">Nome</TableCell>
+                                <TableCell align="right">Valor Unitario</TableCell>
+                                <TableCell align="right">Quantidade</TableCell>
+                                <TableCell align="right">Valor Total</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {order.products?.map((row: any) => (
+                                <TableRow
+                                    key={row.details.name}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell align="right">{row.details.name}</TableCell>
+                                    <TableCell align="right">R$ {row.unity_value.toFixed(2)}</TableCell>
+                                    <TableCell align="right">{row.quantity}</TableCell>
+                                    <TableCell align="right">R$ {(row.unity_value * row.quantity).toFixed(2)}</TableCell>
+                                </TableRow>
+                            ))}
+                            <TableRow
+                                key={'last'}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                <TableCell align="right"></TableCell>
+                                <TableCell align="right"></TableCell>
+                                <TableCell align="right"></TableCell>
+                                <TableCell align="right">
+                                    <Typography className="" variant="h6">
+                                        Total do pedido: R$ {(order.total_price)?.toFixed(2)}
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Main>
         </Box>
     );

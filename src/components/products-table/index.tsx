@@ -11,6 +11,12 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/router';
 
+interface tableProps{
+  setUpdateBasket: (state: boolean) => void,
+  updateBasket: boolean,
+  addToCart: (id: Number) => void
+}
+
 interface Products {
   id: Number;
   name: string;
@@ -18,11 +24,15 @@ interface Products {
   price: Number;
 }
 
-export default function ProductsTable() {
+export default function ProductsTable({setUpdateBasket, updateBasket, addToCart}: tableProps) {
 
   const [products, setProducts] = useState<Array<Products>>([])
+  const [admin, setAdmin] = useState<boolean>(false);
 
   useEffect(() => {
+
+    var isAdmin = (localStorage.getItem('admin') == 'true') ? true : false;
+    setAdmin(isAdmin);
 
     const fetchProducts = async () => {
       await axios.get(
@@ -44,56 +54,58 @@ export default function ProductsTable() {
 
   }, [])
 
-
   const router = useRouter()
 
-  const addToCart = async (id: any) => {
-    var token = localStorage.getItem('token');
-    console.log(token);
+  const edit = (id: any) => {
+    localStorage.setItem('current_product', id);
+    router.push('/products/edit');
+  }
 
-    await axios.post(
-      `http://localhost:3333/carts/add/${id}`,
-      {},
-      {
-          headers: {
-              token: token
-          }
-      }
-    ).then((resp) => {
-      console.log(resp);
-    })
-  };
+  const add = () => {
+    router.push('/products/add');
+  }
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell align="right">Nome</TableCell>
-            <TableCell align="right">Descricao</TableCell>
-            <TableCell align="right">Preco</TableCell>
-            <TableCell align="right"></TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {products?.map((row) => (
-            <TableRow
-              key={row.name}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">{row.id.toString()}</TableCell>
-              <TableCell align="right">{row.name}</TableCell>
-              <TableCell align="right">{row.description}</TableCell>
-              <TableCell align="right">{row.price.toString()}</TableCell>
-
-              <TableCell align="right">
-                <Button variant="contained" onClick={() => addToCart(row.id)}>Adicionar ao carrinho</Button>
-              </TableCell>
+    <>
+      {admin && (
+        <Button style={{ marginTop: 20, marginBottom: 30 }} variant="contained" onClick={() => add()}>Adicionar Produto</Button>
+      )}
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell align="right">Nome</TableCell>
+              <TableCell align="right">Descricao</TableCell>
+              <TableCell align="right">Preco</TableCell>
+              <TableCell align="right"></TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {products?.map((row) => (
+              <TableRow
+                key={row.name}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">{row.id.toString()}</TableCell>
+                <TableCell align="right">{row.name}</TableCell>
+                <TableCell align="right">{row.description}</TableCell>
+                <TableCell align="right">{row.price.toString()}</TableCell>
+
+                <TableCell align="right">
+                  {!admin && (
+                    <Button variant="contained" onClick={() => addToCart(row.id)}>Adicionar ao carrinho</Button>
+                  )}
+                  {admin && (
+                    <Button variant="contained" onClick={() => edit(row.id)}>Editar</Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
+    
   );
 }

@@ -41,8 +41,13 @@ export default function Login() {
             data
         )
         if (resp?.status === 200) {
-            localStorage.setItem('token', resp.data.token);
-            router.push('/home')
+            if (resp.data.error) {
+                alert(resp.data.msg);
+            } else {
+                localStorage.setItem('token', resp.data.token);
+                localStorage.setItem('admin', resp.data.admin);
+                router.push('/products')
+            }
         } else {
             console.log(resp);
         }

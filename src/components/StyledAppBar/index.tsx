@@ -10,9 +10,10 @@ interface StyledAppBarProps {
     handleDrawerOpen: () => void;
     open: boolean;
     drawerWidth: number;
+    cart: any;
 }
 
-export function StyledAppBar({ loggout, handleDrawerOpen, open, drawerWidth }: StyledAppBarProps) {
+export function StyledAppBar({ loggout, handleDrawerOpen, open, drawerWidth, cart }: StyledAppBarProps) {
 
     interface AppBarProps extends MuiAppBarProps {
         open?: boolean;
@@ -32,6 +33,10 @@ export function StyledAppBar({ loggout, handleDrawerOpen, open, drawerWidth }: S
             easing: theme.transitions.easing.easeOut,
             duration: theme.transitions.duration.enteringScreen,
           }),
+        }),
+        ...(cart?.products && {
+            width: `calc(100% - 300px)`,
+            marginRight: 300,
         }),
       }));
 

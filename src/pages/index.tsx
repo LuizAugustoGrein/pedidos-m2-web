@@ -1,5 +1,6 @@
 import Login from "./login";
 import Home from "./home/index"
+import Products from "./products/index"
 import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
@@ -24,7 +25,7 @@ export default function  Index() {
 
   return (
     <>
-      { isAuthenticated ? <Home /> : <Login /> } 
+      { isAuthenticated ? <Products /> : <Login /> } 
     </>
   );
 }

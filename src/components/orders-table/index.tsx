@@ -11,54 +11,56 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/router';
 
-interface Carts {
+interface Orders {
     id: Number;
     total_price: Number;
     status: string;
-    user_id: Number;
-    created_at: Date;
-    updated_at: Date;
+    customer_id: Number;
+    creation_time: Date;
+    update_time: Date;
 }
 
-export default function CartsTable() {
+export default function OrdersTable() {
 
-    const [carts, setCarts] = useState<Array<Carts>>([])
+    const [orders, setOrders] = useState<Array<Orders>>([])
     
     useEffect(() => {
 
         var token = localStorage.getItem('token');
 
-        const fetchCarts = async () => {
+        const fetchOrders = async () => {
 
             await axios.get(
-                'http://localhost:3333/carts',
+                'http://localhost:3333/orders',
                 {
                     headers: {
                         token: token
                     }
                 }
             ).then((resp) => {
+                console.log(resp);
                 if (resp?.status === 200) {
-                    if (resp.data.carts) {
+                    if (resp.data.orders) {
                         const data: any = [];
-                        resp.data.carts.forEach((cart: Carts) => {
-                            data.push(cart);
+                        resp.data.orders.forEach((order: Orders) => {
+                            data.push(order);
                         });
-                        setCarts(data);
+                        setOrders(data);
                     }
                 }
             })
         }
 
-        fetchCarts();
+        fetchOrders();
 
     }, [])
 
 
     const router = useRouter()
 
-    const editCart = (id: any) => {
-        router.push('/carts/edit?id=' + id)
+    const orderDetails = (id: any) => {
+        localStorage.setItem('current_order', id);
+        router.push('/orders/details');
     };
 
     return (
@@ -67,26 +69,20 @@ export default function CartsTable() {
                 <TableHead>
                     <TableRow>
                         <TableCell>ID</TableCell>
-                        <TableCell align="right">Preco Total</TableCell>
-                        <TableCell align="right">Status</TableCell>
-                        <TableCell align="right">Criado em</TableCell>
-                        <TableCell align="right">Atualizado em</TableCell>
+                        <TableCell align="right">Preço Total</TableCell>
                         <TableCell align="right"></TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {carts?.map((row) => (
+                    {orders?.map((row) => (
                         <TableRow
                             key={row.id.toString()}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
                             <TableCell component="th" scope="row">{row.id.toString()}</TableCell>
-                            <TableCell align="right">{row.total_price.toString()}</TableCell>
-                            <TableCell align="right">{row.status.toString()}</TableCell>
-                            <TableCell align="right">{row.created_at.toString()}</TableCell>
-                            <TableCell align="right">{row.updated_at.toString()}</TableCell>
+                            <TableCell align="right">R$ {row.total_price.toFixed(2)}</TableCell>
                             <TableCell align="right">
-                                <Button variant="contained" onClick={() => editCart(row.id)} data-id={row.id}>Editar</Button>
+                                <Button variant="contained" onClick={() => orderDetails(row.id)} data-id={row.id}>ver Detalhes</Button>
                             </TableCell>
                         </TableRow>
                     ))}

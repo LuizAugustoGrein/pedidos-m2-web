@@ -21,7 +21,7 @@ import FastfoodIcon from '@mui/icons-material/Fastfood';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { Box, Button } from '@mui/material';
-import CartsTable from '@/components/carts-table';
+import OrdersTable from '@/components/orders-table';
 
 const drawerWidth = 240;
 
@@ -98,6 +98,7 @@ export default function Menu() {
 
   const loggout = () => {
     localStorage.setItem('token', '');
+    localStorage.setItem('admin', 'false');
     router.reload()
   };
 
@@ -111,24 +112,6 @@ export default function Menu() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-
-  const createCart = () => {
-    var token = localStorage.getItem('token');
-
-    axios.post(
-        'http://localhost:3333/carts',
-        {},
-        {
-            headers: {
-                token: token
-            }
-        }
-    ).then((resp) => {
-        if (resp?.status === 200) {
-            router.reload()
-        }
-    })
-  }
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -186,7 +169,7 @@ export default function Menu() {
               <ListItemText primary={'Produtos'} />
             </ListItemButton>
           </ListItem>
-          <ListItem key={'carts'} disablePadding component="a" href="/carts">
+          <ListItem key={'orders'} disablePadding component="a" href="/orders">
             <ListItemButton>
               <ListItemIcon>
                 <ShoppingCartIcon />
@@ -208,10 +191,9 @@ export default function Menu() {
       <Main open={open}>
         <DrawerHeader />
         <Typography className="" variant="h4">
-          Carrinhos
+          Histórico de Pedidos    
         </Typography>
-        <Button variant="contained" onClick={createCart}>Adicionar</Button>
-        <CartsTable></CartsTable>
+        <OrdersTable></OrdersTable>
       </Main>
     </Box>
   );
